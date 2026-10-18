@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hardware Coin Flip</title>
+
+<style>
+:root {
+    color-scheme: light;
+    --blue: #1688f8;
+    --blue-light: #eaf5ff;
+    --text: #172033;
+    --muted: #758195;
+    --border: #e4eaf1;
+    --bg: #f5f8fc;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 28px 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                 "Segoe UI", sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(ellipse at top, #e2f2ff 0%, transparent 48%),
+        var(--bg);
+}
+
+button, input { font: inherit; }
+
+button { cursor: pointer; }
+
+.container {
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+header { margin-bottom: 24px; }
+
+.eyebrow {
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+h1 {
+    font-size: clamp(28px, 6vw, 38px);
+    letter-spacing: -1.5px;
+    margin: 8px 0;
+}
+
+.subtitle {
+    color: var(--muted);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.card {
+    background: rgba(255,255,255,.94);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 12px 36px rgba(31, 72, 115, .045);
+}
+
+.coin-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 0 24px;
+}
+
+.coin {
+    width: 154px;
+    height: 154px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    position: relative;
+    background: linear-gradient(145deg, #b9e2ff, #4ba7fa);
+    box-shadow:
+        inset 0 0 0 7px rgba(255,255,255,.55),
+        inset 0 0 0 11px rgba(15,104,205,.22),
+        0 14px 30px rgba(22,136,248,.22);
+    color: #0756a5;
+    transition: transform .15s;
+}
+
+.coin::before {
+    content: "";
+    position: absolute;
+    inset: 16px;
+    border: 2px solid rgba(255,255,255,.65);
+    border-radius: 50%;
+}
+
+.coin-face {
+    text-align: center;
+    z-index: 1;
+}
+
+.coin-symbol {
+    font-size: 43px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.coin-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-top: 7px;
+}
+
+.coin.flipping {
+    animation: flip .65s ease-in-out;
+}
+
+@keyframes flip {
+    0% { transform: rotateY(0) scale(1); }
+    50% { transform: rotateY(900deg) scale(.82); }
+    100% { transform: rotateY(1800deg) scale(1); }
+}
+
+.result {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.result h2 {
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: -.8px;
+}
+
+.result p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.primary {
+    border: 0;
+    border-radius: 14px;
+    background: var(--blue);
+    color: white;
+    font-weight: 750;
+    padding: 15px 20px;
+    width: 100%;
+    box-shadow: 0 5px 14px rgba(22,136,248,.2);
+    transition: background .15s, transform .15s;
+}
+
+.primary:hover { background: #0875e3; }
+.primary:active { transform: scale(.985); }
+.primary:disabled { opacity: .55; cursor: wait; }
+
+.secondary {
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: white;
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.stat {
+    padding: 18px;
+    border-radius: 18px;
+    background: white;
+    border: 1px solid var(--border);
+}
+
+.stat-label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.stat-value {
+    font-size: 29px;
+    font-weight: 800;
+    margin-top: 7px;
+    letter-spacing: -1px;
+}
+
+.stat-percent {
+    color: var(--blue);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 0 0 16px;
+}
+
+.field-label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.input {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: #fbfdff;
+    border-radius: 11px;
+    padding: 12px;
+    outline: none;
+    color: var(--text);
+}
+
+.input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(22,136,248,.1);
+}
+
+.settings-row {
+    display: flex;
+    gap: 8px;
+}
+
+.settings-row .input { min-width: 0; }
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 14px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #a5afbd;
+    flex-shrink: 0;
+}
+
+.dot.online { background: #20b879; }
+.dot.error { background: #e34b55; }
+
+.history {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.history-item {
+    min-width: 66px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    background: #fbfdff;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.history-item strong {
+    display: block;
+    font-size: 12px;
+}
+
+.history-item span {
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 5px;
+    display: block;
+}
+
+.empty {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.footnote {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 16px;
+}
+
+@media (max-width: 420px) {
+    .card { padding: 18px; }
+    .coin { width: 136px; height: 136px; }
+}
+</style>
+</head>
+
+<body>
+<main class="container">
+    <header>
+        <div class="eyebrow">CF / Hardware Randomness</div>
+        <h1>Coin Flip</h1>
+        <div class="subtitle">
+            A coin flip powered by your Raspberry Pi hardware RNG.
+        </div>
+    </header>
+
+    <section class="card">
+        <div class="coin-area">
+            <div class="coin" id="coin" aria-label="Coin">
+                <div class="coin-face">
+                    <div class="coin-symbol" id="coinSymbol">?</div>
+                    <div class="coin-label" id="coinLabel">READY</div>
+                </div>
+            </div>
+
+            <div class="result" aria-live="polite">
+                <h2 id="resultTitle">Ready to flip</h2>
+                <p id="resultDetail">Connect to your RNG server to begin.</p>
+            </div>
+        </div>
+
+        <button class="primary" id="flipButton">Flip Coin</button>
+        <p class="footnote">
+            Each flip requests one byte from the API. The most significant
+            bit determines Heads (1) or Tails (0).
+        </p>
+    </section>
+
+    <section class="stats">
+        <div class="stat">
+            <div class="stat-label">HEADS</div>
+            <div class="stat-value" id="headsCount">0</div>
+            <div class="stat-percent" id="headsPercent">0% of flips</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">TAILS</div>
+            <div class="stat-value" id="tailsCount">0</div>
+            <div class="stat-percent" id="tailsPercent">0% of flips</div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h3 class="section-title">Randomness API</h3>
+        <label class="field-label" for="apiUrl">Base URL</label>
+        <div class="settings-row">
+            <input class="input" id="apiUrl"
+                   type="url" value="http://SERVE-IP:8000"
+                   placeholder="http://SERVE-IP:8000"
+                   spellcheck="false">
+            <button class="secondary" id="saveButton">Save</button>
+        </div>
+
+        <div class="status">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">Not checked</span>
+        </div>
+        <div style="margin-top:12px">
+            <button class="secondary" id="checkButton">Test connection</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <h3 class="section-title">Recent flips</h3>
+        <div class="history" id="history">
+            <div class="empty">Your flips will appear here.</div>
+        </div>
+        <div style="margin-top:16px">
+            <button class="secondary" id="resetButton">Reset statistics</button>
+        </div>
+    </section>
+
+    <p class="footnote" style="text-align:center">
+        Randomness is provided by the configured API.
+        This interface does not independently verify entropy quality.
+    </p>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+let apiBase = "http://192.168.1.82:8000";
+let heads = 0;
+let tails = 0;
+let history = [];
+let busy = false;
+
+function setStatus(message, state = "") {
+    $("statusText").textContent = message;
+    $("statusDot").className = "dot" + (state ? " " + state : "");
+}
+
+function getApiBase() {
+    const value = $("apiUrl").value.trim().replace(/\/+$/, "");
+    if (!value) throw new Error("Enter an API URL.");
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol)) {
+        throw new Error("API URL must use HTTP or HTTPS.");
+    }
+    return url.origin + url.pathname.replace(/\/+$/, "");
+}
+
+async function apiFetch(path, timeoutMs = 5000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const response = await fetch(apiBase + path, {
+            method: "GET",
+            cache: "no-store",
+            signal: controller.signal
+        });
+
+        if (!response.ok) {
+            throw new Error(`API returned HTTP ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        if (error.name === "AbortError") {
+            throw new Error("Request timed out.");
+        }
+        if (error instanceof TypeError) {
+            throw new Error(
+                "Cannot reach API. Check the server URL, network and CORS."
+            );
+        }
+        throw error;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+function updateStats() {
+    const total = heads + tails;
+    $("headsCount").textContent = heads;
+    $("tailsCount").textContent = tails;
+    $("headsPercent").textContent =
+        `${total ? (heads / total * 100).toFixed(1) : "0.0"}% of flips`;
+    $("tailsPercent").textContent =
+        `${total ? (tails / total * 100).toFixed(1) : "0.0"}% of flips`;
+}
+
+function renderHistory() {
+    const container = $("history");
+    container.replaceChildren();
+
+    if (!history.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "Your flips will appear here.";
+        container.appendChild(empty);
+        return;
+    }
+
+    history.forEach((item) => {
+        const element = document.createElement("div");
+        element.className = "history-item";
+
+        const result = document.createElement("strong");
+        result.textContent = item.result;
+
+        const byte = document.createElement("span");
+        byte.textContent = `0x${item.hex}`;
+
+        element.append(result, byte);
+        container.appendChild(element);
+    });
+}
+
+async function checkConnection() {
+    $("checkButton").disabled = true;
+    setStatus("Checking API…");
+
+    try {
+        apiBase = getApiBase();
+        const data = await apiFetch("/health");
+
+        if (data.status && data.status !== "ok") {
+            throw new Error("API health status is not OK.");
+        }
+
+        setStatus(`Connected · ${apiBase}`, "online");
+    } catch (error) {
+        setStatus(error.message, "error");
+    } finally {
+        $("checkButton").disabled = false;
+    }
+}
+
+async function flipCoin() {
+    if (busy) return;
+
+    busy = true;
+    $("flipButton").disabled = true;
+    $("resultTitle").textContent = "Flipping…";
+    $("resultDetail").textContent = "Requesting one byte from your Pi.";
+    $("coin").classList.remove("flipping");
+    void $("coin").offsetWidth;
+    $("coin").classList.add("flipping");
+
+    try {
+        apiBase = getApiBase();
+
+        const data = await apiFetch("/hex?n=1");
+
+        if (data.bytes !== 1 ||
+            typeof data.hex !== "string" ||
+            !/^[0-9a-fA-F]{2}$/.test(data.hex)) {
+            throw new Error("Invalid response from RNG API.");
+        }
+
+        const hex = data.hex.toLowerCase();
+        const byte = parseInt(hex, 16);
+        const isHeads = (byte & 0x80) !== 0;
+        const result = isHeads ? "Heads" : "Tails";
+
+        if (isHeads) heads++;
+        else tails++;
+
+        $("coinSymbol").textContent = isHeads ? "H" : "T";
+        $("coinLabel").textContent = result.toUpperCase();
+        $("resultTitle").textContent = result;
+        $("resultDetail").textContent =
+            `Byte: 0x${hex} · MSB: ${isHeads ? "1" : "0"}`;
+
+        history.unshift({ result, hex });
+        history = history.slice(0, 10);
+
+        updateStats();
+        renderHistory();
+        setStatus(`Connected · ${apiBase}`, "online");
+    } catch (error) {
+        $("resultTitle").textContent = "Flip failed";
+        $("resultDetail").textContent = error.message;
+        setStatus(error.message, "error");
+        $("coinSymbol").textContent = "!";
+        $("coinLabel").textContent = "ERROR";
+    } finally {
+        setTimeout(() => $("coin").classList.remove("flipping"), 700);
+        busy = false;
+        $("flipButton").disabled = false;
+    }
+}
+
+$("flipButton").addEventListener("click", flipCoin);
+
+$("checkButton").addEventListener("click", checkConnection);
+
+$("saveButton").addEventListener("click", async () => {
+    try {
+        apiBase = getApiBase();
+        $("apiUrl").value = apiBase;
+        setStatus("API URL saved for this page.", "");
+        await checkConnection();
+    } catch (error) {
+        setStatus(error.message, "error");
+    }
+});
+
+$("resetButton").addEventListener("click", () => {
+    heads = 0;
+    tails = 0;
+    history = [];
+    updateStats();
+    renderHistory();
+    $("coinSymbol").textContent = "?";
+    $("coinLabel").textContent = "READY";
+    $("resultTitle").textContent = "Ready to flip";
+    $("resultDetail").textContent = "Statistics reset.";
+});
+
+$("apiUrl").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") $("saveButton").click();
+});
+
+updateStats();
+renderHistory();
+checkConnection();
+</script>
+</body>
+</html>
